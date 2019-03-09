@@ -8,16 +8,20 @@ Created on Thu Mar  7 17:29:57 2019
 #%% generating
 import sys
 import random
+RULES = {30: {"000": '.',"00.": '.',"0.0": '.',"...": '.',
+              "0..": '0',".00": '0',".0.": '0',"..0": '0'},
 
-rule30 = {"000": '.',
-          "00.": '.',
-          "0.0": '.',
-          "...": '.',
-          "0..": '0',
-          ".00": '0',
-          ".0.": '0',
-          "..0": '0',
+
+         90: {"000": ".", "00.": "0", "0.0": ".", "0..": "0",
+              ".00": "0", ".0.": ".", "..0": "0", "...": "."},
+
+         110: {"000": '.', "00.": '0', "0.0": '0', "0..": '.',
+               ".00": '0', ".0.": '0', "..0": '0', "...": '.'},
+
+         184: {"000": "0", "00.": ".", "0.0": "0", "0..": "0",
+               ".00": "0", ".0.": ".", "..0": ".", "...": "."}
          }
+
 
 def generate_state(number_of_cells):                    #genera uno stato con n celle di cui tutti '.' tranne uno '0' al centro
 
@@ -35,20 +39,20 @@ def generate_state(number_of_cells):                    #genera uno stato con n 
     return state
 
 
-def evolve(stato):                                      #riceve ora una lista
+def evolve(stato,nrule):                                      #riceve ora una lista
  
     length = len(stato)
     new_state = ['.']                                   #aggiungo un . all'inizio dello stato
     for i in range(length-2):
         string_to_translate = ''.join(stato[i:i+3])   
-        translated_cell = rule30[string_to_translate]   #eseguo la traduzione dei tripletti
+        translated_cell = RULES[nrule][string_to_translate]   #eseguo la traduzione dei tripletti
         new_state.append(translated_cell)
     new_state.append('.')                               #aggiungo un . alla fine dello stato
        
     return new_state                                    #restituisce la lista new_state
 
 #%% simulation function
-def simulation(ncells):
+def simulation(ncells,nrule):
     initial_state = generate_state(ncells)
     states_seq = [initial_state]                        #state_seq è una lista con dentro come primo membro lo stato iniziale  
     number_of_states = int((ncells-1)/2)
@@ -64,14 +68,14 @@ def simulation(ncells):
                 sys.stdout.write(u'\u2588')
         sys.stdout.write('\n')
 
-        new_state = evolve(old_state)                   #new_state è la lista-stato con singoli membri . e 0
+        new_state = evolve(old_state,nrule)                   #new_state è la lista-stato con singoli membri . e 0
         states_seq.append(new_state)
     return states_seq
 
 ########################################################
 #%% testing
 def test_generation_valid_state():                      #verifico se il seed generato ha solo . e 0
-    n = random.randint(1,20)
+    n = random.randint(1,20)                            #come posso verificare per un qualsiasi input?
     state = generate_state(n)
     assert set(state) == {'.', '0'}
     
@@ -100,15 +104,39 @@ def test_levolved_equal_lgenerated():                   #verifico che len(genera
     x = evolve(status)
     assert len(x) == len(status)        
     
-#%% main    
-nb = input('Quante celle vuoi per ogni stato?: ')
+#%% main
+y=1
+a=0    
+while y==1:
+    while a==0:
+        nr = input('Quale regola vuoi applicare? scegli fra [30,90,110,184]: ')
+        try:     
+            nrule = int(nr)
+            if nrule <0:
+                print("Numero non valido")
+                continue
+            lista = [30,90,110,184]
+            for i in range(4):
+                if nrule == lista[i]:
+                    a=1
+                    break
+                elif i == 3:
+                    print('Non esiste questa regola o comunque non la conosco')
 
-try:
-    number = int(nb)
-    if number <0:
-        print("Numero non valido") 
-except ValueError:
-    print("Invalid number")
+        except ValueError:
+            print('Invalid input')
+        
+    nb = input('Quante celle vuoi per ogni stato?: ')
+        
+    try:
+        number = int(nb)
+        if number <0:
+            print("Numero non valido") 
+    except ValueError:
+        print("Invalid input")
    
-else:    
-    simulation(number)
+    else:    
+        simulation(number,nrule)
+        x = input('Vuoi generarne un altro? Digita \'1\' se sì, altrimenti \'0\': ')
+        y = int(x)
+        a=0
