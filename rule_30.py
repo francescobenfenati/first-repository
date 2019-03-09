@@ -81,4 +81,14 @@ def test_evolve_same_length():                      #verifico che stato di input
     length_output = len(lista_output)
     assert length_input == length_output
 
-simulation(16)
+nb = input('Quanti stati vuoi generare?: ')
+
+try:
+    number = int(nb)
+    if number <0:
+        print("Numero non valido") 
+except ValueError:
+    print("Invalid number")
+   
+else:    
+    simulation(number)
