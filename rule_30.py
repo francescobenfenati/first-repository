@@ -60,15 +60,25 @@ def simulation(nsteps):
 
 ########################################################
 
-def test_generation_valid_state():
+def test_generation_valid_state():                  #verifico se il seed generato ha solo . e 0
     state = generate_state()
     assert set(state) == {'.', '0'}
     
 
-def test_generation_single_alive():
+def test_generation_single_alive():                 #verifico se il seed ha uno e uno solo '0'
     state = generate_state()
     num_of_0 = sum(1 for i in state if i=='0')
     assert num_of_0 == 1
 
+def test_evolve_valid_state():                      #verifico che, se lo stato di input ha solo . e 0, anche l'output sarà tale
+    state = evolve(generate_state())
+    assert set(state) == {'.','0'}
+
+def test_evolve_same_length():                      #verifico che stato di input e output hanno la stessa lunghezza
+    lista_input = list(generate_state())
+    length_input =  len(lista_input)
+    lista_output = evolve(generate_state())
+    length_output = len(lista_output)
+    assert length_input == length_output
 
 simulation(16)
