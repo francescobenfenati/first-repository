@@ -65,8 +65,8 @@ def simulation(ncells,nrule):
             if old_state[j] == '.':                     #disegno le celle
                 sys.stdout.write('  ')
             else:
-                sys.stdout.write(u'\u2588')
- 		sys.stdout.write(u'\u2588')    
+                 sys.stdout.write(u'\u2588')
+                 sys.stdout.write(u'\u2588')
         sys.stdout.write('\n')
 
         new_state = evolve(old_state,nrule)                   #new_state è la lista-stato con singoli membri . e 0
@@ -89,7 +89,8 @@ def test_generation_single_alive():                     #verifico se il seed ha 
 
 def test_evolve_valid_state():                          #verifico che, se lo stato di input ha solo . e 0, anche l'output sarà tale
     n = random.randint(1,20)
-    state = evolve(generate_state(n))
+    rule = random.choice([30,90,110,184])
+    state = evolve(generate_state(n),rule)
     assert set(state) == {'.','0'}
 
     
@@ -101,8 +102,9 @@ def test_generate_length():                             #verifico che la lunghez
     
 def test_levolved_equal_lgenerated():                   #verifico che len(generato) = len(evoluto)
     n = random.randint(1,20)
+    rule = random.choice([30,90,110,184])
     status = generate_state(n)
-    x = evolve(status)
+    x = evolve(status,rule)
     assert len(x) == len(status)        
     
 #%% main
