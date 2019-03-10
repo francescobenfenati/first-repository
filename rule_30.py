@@ -8,9 +8,10 @@ Created on Thu Mar  7 17:29:57 2019
 #%% generating
 import sys
 import random
+import time
 RULES = {30: {"000": '.',"00.": '.',"0.0": '.',"...": '.',
               "0..": '0',".00": '0',".0.": '0',"..0": '0'},
-
+                  
 
          90: {"000": ".", "00.": "0", "0.0": ".", "0..": "0",
               ".00": "0", ".0.": ".", "..0": "0", "...": "."},
@@ -67,6 +68,7 @@ def simulation(ncells,nrule):
             else:
                  sys.stdout.write(u'\u2588')
                  sys.stdout.write(u'\u2588')
+        time.sleep(.1)
         sys.stdout.write('\n')
 
         new_state = evolve(old_state,nrule)                   #new_state è la lista-stato con singoli membri . e 0
