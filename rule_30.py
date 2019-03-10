@@ -63,9 +63,10 @@ def simulation(ncells,nrule):
         for j in range(ncells):
             
             if old_state[j] == '.':                     #disegno le celle
-                sys.stdout.write(' ')
+                sys.stdout.write('  ')
             else:
                 sys.stdout.write(u'\u2588')
+ 		sys.stdout.write(u'\u2588')    
         sys.stdout.write('\n')
 
         new_state = evolve(old_state,nrule)                   #new_state è la lista-stato con singoli membri . e 0
