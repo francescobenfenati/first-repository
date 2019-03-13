@@ -9,18 +9,18 @@ Created on Thu Mar  7 17:29:57 2019
 import sys
 import random
 RULES = {30: {"000": '.',"00.": '.',"0.0": '.',"...": '.',
-    "0..": '0',".00": '0',".0.": '0',"..0": '0'},
+              "0..": '0',".00": '0',".0.": '0',"..0": '0'},
         
         
-        90: {"000": ".", "00.": "0", "0.0": ".", "0..": "0",
+         90: {"000": ".", "00.": "0", "0.0": ".", "0..": "0",
             ".00": "0", ".0.": ".", "..0": "0", "...": "."},
                 
-                110: {"000": '.', "00.": '0', "0.0": '0', "0..": '.',
-                    ".00": '0', ".0.": '0', "..0": '0', "...": '.'},
+         110: {"000": '.', "00.": '0', "0.0": '0', "0..": '.',
+              ".00": '0', ".0.": '0', "..0": '0', "...": '.'},
                         
-                        184: {"000": "0", "00.": ".", "0.0": "0", "0..": "0",
-                            ".00": "0", ".0.": ".", "..0": ".", "...": "."}
-                            }
+         184: {"000": "0", "00.": ".", "0.0": "0", "0..": "0",
+              ".00": "0", ".0.": ".", "..0": ".", "...": "."}
+         }
 
 
 def generate_state(number_of_cells):                    #genera uno stato con n celle di cui tutti '.' tranne uno '0' al centro
@@ -33,8 +33,8 @@ def generate_state(number_of_cells):                    #genera uno stato con n 
 
     state.append('0')
 
-for j in range(intermediate_position+1,number_of_cells):
-    state.append('.')
+    for j in range(intermediate_position+1,number_of_cells):
+        state.append('.')
     
     return state
 
@@ -62,13 +62,13 @@ def evolve(stato,nrule,border_rule):                                      #ricev
             elif i == length-1:
                 string_to_translate = stato[-1]+stato[0]+stato[1]
                 new_state[0] = translated_cell
-elif border_rule == 3:
-    for i in range(length):
-        if i == 0:
-            string_to_translate = stato[i+1]+stato[i]+stato[i+1]
-            translated_cell = RULES[nrule][string_to_translate]
-            new_state[0] = translated_cell
-            continue
+    elif border_rule == 3:
+        for i in range(length):
+            if i == 0:
+                string_to_translate = stato[i+1]+stato[i]+stato[i+1]
+                translated_cell = RULES[nrule][string_to_translate]
+                new_state[0] = translated_cell
+                continue
             elif i == length-1:
                 string_to_translate = stato[i-1]+stato[i]+stato[i-1]
                 translated_cell = RULES[nrule][string_to_translate]
@@ -78,7 +78,7 @@ elif border_rule == 3:
                 translated_cell = RULES[nrule][string_to_translate]
                 new_state.append(translated_cell)
 
-return new_state                                    #restituisce la lista new_state
+    return new_state                                    #restituisce la lista new_state
 
 #%% simulation function
 def simulation(ncells,nrule,border_rule,number_states):
@@ -88,21 +88,21 @@ def simulation(ncells,nrule,border_rule,number_states):
         number_states = int(((ncells-1)/2)+1)
     else:
         number_states = int(number_states)
-for i in range(number_states):
-    old_state = states_seq[-1]                      #old_state è la lista-stato presente in ultima posizione di states_seq
+    for i in range(number_states):
+        old_state = states_seq[-1]                      #old_state è la lista-stato presente in ultima posizione di states_seq
     
-    for j in range(ncells):
+        for j in range(ncells):
         
-        if old_state[j] == '.':                     #disegno le celle
-            sys.stdout.write('  ')
+            if old_state[j] == '.':                     #disegno le celle
+                sys.stdout.write('  ')
             else:
                 sys.stdout.write(u'\u2588')
                 sys.stdout.write(u'\u2588')
-    sys.stdout.write('\n')
+        sys.stdout.write('\n')
         
         new_state = evolve(old_state,nrule,border_rule)                   #new_state è la lista-stato con singoli membri . e 0
         states_seq.append(new_state)
-return states_seq
+    return states_seq
 
 ########################################################
 #%% testing
@@ -146,7 +146,6 @@ def test_levolved_equal_lgenerated():                   #verifico che len(genera
 
 
 #%% main
-
 y=1
 a=0
 while y==1:
@@ -164,11 +163,11 @@ while y==1:
                     break
                 elif i == 3:
                     print('Non esiste questa regola o comunque non la conosco')
-        
+    
         except ValueError:
             print('Invalid input')
-r = input("Come vuoi i bordi, costanti [1], circolari [2] o rilfettent[3]?: ")
-border = int(r)
+    r = input("Come vuoi i bordi, costanti [1], circolari [2] o riflettenti[3]?: ")
+    border = int(r)
 
     nb = input('Quante celle vuoi per ogni stato?: ')
     
@@ -179,9 +178,10 @@ border = int(r)
     except ValueError:
         print("Invalid input")
 
-else:
-    numero = input("quante iterazioni vuoi?('d' per default): ")
-    simulation(number,nrule,border,numero)
-    x = input('Vuoi generarne un altro? Digita \'1\' se sì, altrimenti \'0\': ')
-    y = int(x)
-    a=0
+    else:
+        numero = input("quante iterazioni vuoi?('d' per default): ")
+        simulation(number,nrule,border,numero)
+        x = input('Vuoi generarne un altro? Digita \'1\' se sì, altrimenti \'0\': ')
+        y = int(x)
+        a=0
+
