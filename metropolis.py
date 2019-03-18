@@ -1,13 +1,15 @@
 import numpy as np
 import time
-
 N_run= 100
 N = 100000 # number of MC events
+pi = np.zeros(N_run)
 start_time = time.time()
 
-punti = np.array([np.random.rand(2) for i in range(N)])
-array_products = np.array([np.dot(punti[i],punti[i]) for i in range(len(punti))])
-pi = np.array([4*len(array_products[array_products<1])/N for j in range(N_run)])
+for j in range(N_run):
+    
+    a = pow( np.array([np.random.rand(N),np.random.rand(N)]),2)
+    pi[j]+=4*(np.sum(np.where(a[0]+a[1]<1,1,0)))/N
+
 pi_mean = np.mean(pi)
 run_time = time.time()
 
