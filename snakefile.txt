@@ -1,0 +1,30 @@
+numbers = ["00"]
+for i in range(1,50):
+    numbers.append("{:02d}".format(i))
+
+rule all:
+    input:
+        expand("transazioni_{number}.tsv", number=numbers)
+    output:
+        "result.txt"
+    shell:
+        "cat {input} > {output}"
+
+
+rule import_files:
+    output:
+        out = "transazioni_{number}.tsv"
+    
+    run:
+        import requests
+        url_base = ("https://raw.githubusercontent.com/UniboDIFABiophysics"+
+                    "/programmingCourseDIFA/master/snakemake_exercise/")
+        filename = output.out
+
+        response = requests.get(url_base+filename)
+
+        # Throw an error for bad status codes
+        response.raise_for_status()
+
+        with open(filename, 'wb') as handle:
+            handle.write(response.content)
