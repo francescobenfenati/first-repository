@@ -1,5 +1,5 @@
 numbers = ["00"]
-for i in range(1,3):
+for i in range(1,50):
     numbers.append("{:02d}".format(i))
 import hashlib
 def md5(fname):
@@ -13,28 +13,29 @@ rule all:
     input:
         expand("transazioni_hashed_{number}.tsv", number=numbers)
     output:
-        "result.txt"
+        "result.tsv"
     shell:
         "cat {input} >> {output} "
 
 rule hashing:
     input:
-        ["transazioni_00.tsv", "transazioni_01.tsv","transazioni_02.tsv"]
+        expand("transazioni_{numero}.tsv", numero=numbers)
     output:
-        ["transazioni_hashed_00.tsv","transazioni_hashed_01.tsv","transazioni_hashed_02.tsv"]
+        expand("transazioni_hashed_{numero}.tsv",numero=numbers)
     run:
-        with open("transazioni_hashed_00.tsv",'w') as of:
-                of.write(md5("transazioni_00.tsv"))
+        i = 0
+        for filename in output:
+            ifname = "transazioni_"+"{:02d}".format(i)+".tsv"
+            with open(filename,'w') as of:
+                of.write(ifname)    
+                of.write("  ")       
+                of.write(md5(ifname))
                 of.write('\n')
-        with open("transazioni_hashed_01.tsv",'w') as of:
-                of.write(md5("transazioni_01.tsv")) 
-                of.write('\n') 
-        with open("transazioni_hashed_02.tsv",'w') as of:
-                of.write(md5("transazioni_02.tsv"))
+            i += +1
         
 rule import_files:
     output:
-        out = "transazioni_{number}.tsv"
+        out = "transazioni_{numero}.tsv"
     
     run:
         import requests
@@ -50,20 +51,38 @@ rule import_files:
         with open(filename, 'wb') as handle:
             handle.write(response.content)
 
+rule confront_hashes:
+    input:
+        "result.tsv",
+        "md5sums.tsv"
+    run:
+        f_result = open("result.tsv",'r')
+        f_md5sums = open("md5sums.tsv",'r')
+        try:
+            for x in f_result:
+                if x == f_md5sums.readline():
+                    continue
+                else:
+                    raise Exception("Hashes don't match")
+        except Exception:
+                print("Hashes don't match")
+                               
+            
+        
+
 rule import_hashes:
-        output:
-           out = "md5sums.tsv"
-        run:
-            import requests
-            url_base = ("https://raw.githubusercontent.com/UniboDIFABiophysics"+
-                        "/programmingCourseDIFA/master/snakemake_exercise/")
-            filename = output.out
+    output:
+       out = "md5sums.tsv"
+    run:
+        import requests
+        url_base = ("https://raw.githubusercontent.com/UniboDIFABiophysics"+
+                    "/programmingCourseDIFA/master/snakemake_exercise/")
+        filename = output.out
+        response = requests.get(url_base+filename)
 
-            response = requests.get(url_base+filename)
+        # Throw an error for bad status codes
+        response.raise_for_status()
 
-            # Throw an error for bad status codes
-            response.raise_for_status()
-    
-            with open(filename, 'wb') as handle:
-                handle.write(response.content)
+        with open(filename, 'wb') as handle:
+            handle.write(response.content)
             
