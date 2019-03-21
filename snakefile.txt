@@ -11,27 +11,16 @@ def md5(fname):
             return hash_md5.hexdigest()
 rule all:
     input:
-        expand("transazioni_hashed_{number}.tsv", number=numbers)
+        expand("transazioni_{number}.tsv", number=numbers)
     output:
         "result.tsv"
-    shell:
-        "cat {input} >> {output} "
-
-rule hashing:
-    input:
-        expand("transazioni_{numero}.tsv", numero=numbers)
-    output:
-        expand("transazioni_hashed_{numero}.tsv",numero=numbers)
     run:
-        i = 0
-        for filename in output:
-            ifname = "transazioni_"+"{:02d}".format(i)+".tsv"
-            with open(filename,'w') as of:
-                of.write(ifname)    
-                of.write("  ")       
-                of.write(md5(ifname))
+        for filename in input:
+            with open("result.tsv",'a') as of:
+                of.write(filename)    
+                of.write("\t")       
+                of.write(md5(filename))
                 of.write('\n')
-            i += +1
         
 rule import_files:
     output:
