@@ -1,5 +1,6 @@
+import os
 numbers = ["00"]
-for i in range(1,50):
+for i in range(1,5):
     numbers.append("{:02d}".format(i))
 import hashlib
 def md5(fname):
@@ -9,6 +10,7 @@ def md5(fname):
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
             return hash_md5.hexdigest()
+
 rule all:
     input:
         expand("transazioni_{number}.tsv", number=numbers)
@@ -21,10 +23,10 @@ rule all:
                 of.write("\t")       
                 of.write(md5(filename))
                 of.write('\n')
-        
+
 rule import_files:
     output:
-        out = "transazioni_{numero}.tsv"
+        out = "transazioni_{number}.tsv"
     
     run:
         import requests
@@ -45,20 +47,30 @@ rule confront_hashes:
         "result.tsv",
         "md5sums.tsv"
     run:
-        f_result = open("result.tsv",'r')
-        f_md5sums = open("md5sums.tsv",'r')
         try:
-            for x in f_result:
-                if x == f_md5sums.readline():
-                    continue
-                else:
-                    raise Exception("Hashes don't match")
+            a = md5("result.tsv")
+            b = md5("md5sums.tsv")
+            if a != b:
+                raise Exception("Hashes don't match")
         except Exception:
                 print("Hashes don't match")
                                
-            
-        
+rule sum_transactions:
+    input:
+        expand("transazioni_{number}.tsv",number=numbers)
+    output:
+        "transazioni_corrette.tsv"
 
+    script:
+        "/Users/francescobenfenati/.spyder-py3/snakemake_lesson/sums_transactions.py"
+           
+rule sum_all:
+    input:
+        "transazioni_corrette.tsv"
+    output:
+        "finale.tsv"
+    script :
+        "/Users/francescobenfenati/.spyder-py3/snakemake_lesson/sum_all.py"
 rule import_hashes:
     output:
        out = "md5sums.tsv"
