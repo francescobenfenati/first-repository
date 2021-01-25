@@ -6,8 +6,8 @@ Created on Sun Dec  6 12:17:47 2020
 @author: francescobenfenati
 """
 
-#provaaaaaa
-#%matplotlib qt5
+
+%matplotlib qt5
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,12 +15,12 @@ import pandas as pd
 from scipy.stats import norm, chisquare
 from scipy.optimize import curve_fit
 
-fig, axs = plt.subplots(3,3)
-fig2, axs2 = plt.subplots(3,3)
+fig, axs = plt.subplots(3,3,figsize=(15,15))
+fig2, axs2 = plt.subplots(3,3,figsize=(15,15))
 axs = axs.ravel()
 axs2 = axs2.ravel()
 
-clbs = [0,2,3,4,5,6,7,8,9,10,12]
+clbs = [0,2,3,4,5,6,7,8,9,10,11,12,13,16,17,18]
 df_collection = []
 
 def fit_function(x,B,a,b):
@@ -43,6 +43,9 @@ for i in clbs:
 #need to multiply by 1e10 otherwise values are too low for fitting...     
     x= np.array(data['values']*1e10)     
     if i == 6:
+       # a= list(x)
+       # print("index of min is: ", a.index(min(a)))
+       # print(min(a)*1e-10)
         x = np.delete(x,np.where(x==np.amin(x)))
 #x = np.array(arr)
 
@@ -81,9 +84,9 @@ for i in clbs:
         #print(chisquare(f_obs=x_entries, f_exp=expected_events,ddof=len(x_entries)-2))
 
         #Make the plot nicer.
-        axs[clbs.index(i)].set_xlabel('time [$10^{-10}$ s]')
-        axs[clbs.index(i)].set_ylabel('Entries')
-        axs[clbs.index(i)].set_title(f'CLB {i}')
+        axs[clbs.index(i)].set_xlabel('time [$10^{-10}$ s]',fontsize=13)
+        axs[clbs.index(i)].set_ylabel('Entries',fontsize=13)
+        axs[clbs.index(i)].set_title(f'CLB {i}',fontsize=14)
         #axs[clbs.index(i)].legend()
         #axs[i].show()
         fig.tight_layout()
@@ -116,12 +119,12 @@ for i in clbs:
         #print('reduced chi value =',chi,'\n')
         #print(chisquare(f_obs=x_entries, f_exp=expected_events,ddof=len(x_entries)-2))
         
-        axs2[clbs.index(i)-9].set_xlabel('time [$10^{-10}$ s]')
-        axs2[clbs.index(i)-9].set_ylabel('Entries')
-        axs2[clbs.index(i)-9].set_title(f'CLB {i}')
+        axs2[clbs.index(i)-9].set_xlabel('time [$10^{-10}$ s]',fontsize=13)
+        axs2[clbs.index(i)-9].set_ylabel('Entries',fontsize=13)
+        axs2[clbs.index(i)-9].set_title(f'CLB {i}',fontsize=14)
         fig2.tight_layout()
 
-        #round with 2 decimals and get back to the 1e-10 array to put it in the df
+        #get back to the 1e-10 array to put it in the df
         stat = [x[i]*1e-10 for i in range(len(x))] 
         statx = np.array(stat)
         
