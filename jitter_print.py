@@ -7,12 +7,11 @@ Created on Sun Dec  6 12:17:47 2020
 """
 
 
-%matplotlib qt5
-
+#%matplotlib qt5
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.stats import norm, chisquare
+#from scipy.stats import norm, chisquare
 from scipy.optimize import curve_fit
 
 fig, axs = plt.subplots(3,3,figsize=(15,15))
@@ -20,7 +19,7 @@ fig2, axs2 = plt.subplots(3,3,figsize=(15,15))
 axs = axs.ravel()
 axs2 = axs2.ravel()
 
-clbs = [0,2,3,4,5,6,7,8,9,10,11,12,13,16,17,18]
+clbs = [0,2,3,4,5,6,7,8,9,10,11,12,13,16,17,18]#anche la 20 (è la 6.2), 21 è 6.3, 22 è 6 misurata a 1 ms/div
 df_collection = []
 
 def fit_function(x,B,a,b):
@@ -43,10 +42,20 @@ for i in clbs:
 #need to multiply by 1e10 otherwise values are too low for fitting...     
     x= np.array(data['values']*1e10)     
     if i == 6:
-       # a= list(x)
-       # print("index of min is: ", a.index(min(a)))
-       # print(min(a)*1e-10)
+        a= list(x)
+        print("index of min is: ", a.index(min(a)))
+        print(min(a)*1e-10)
         x = np.delete(x,np.where(x==np.amin(x)))
+        
+   # if i == 21:
+    #    a= list(x)
+       # print("zero is at" , a.index(0))
+       # print(a[0])
+       # print(a[28])
+       # print("index of min 21 is: ", a.index(min(a)))
+       # print(min(a)*1e-10)
+       # x = np.delete(x,np.where(x==np.amin(x)))
+                  
 #x = np.array(arr)
 
 #----------------------------- 2nd Fit Method --------------------------------#
@@ -55,7 +64,7 @@ for i in clbs:
  #   return (1/(b*(np.sqrt(2*np.pi)))) * np.exp(-((x-a)**2)/(2*b**2))
 
     if i<10:
-        x_entries, binning, _ = axs[clbs.index(i)].hist(x, bins=30, density=0, alpha=0.5 )
+        x_entries, binning, _ = axs[clbs.index(i)].hist(x, bins=1000, density=0, alpha=0.5 )
 
         #find bin centres
         binscentres = np.array([0.5 * (binning[i] + binning[i+1]) 
@@ -88,9 +97,9 @@ for i in clbs:
         axs[clbs.index(i)].set_ylabel('Entries',fontsize=13)
         axs[clbs.index(i)].set_title(f'CLB {i}',fontsize=14)
         #axs[clbs.index(i)].legend()
-        #axs[i].show()
+        #axs[clbs.index(i)].show()
         fig.tight_layout()
-
+    
         #round with 2 decimals and get back to the 1e-10 array to put it in the df
         stat = [x[i]*1e-10 for i in range(len(x))] 
         statx = np.array(stat)
@@ -98,8 +107,9 @@ for i in clbs:
         #plt.ylabel('f(x)')
         #plt.title('Delays')
 
+      
     else:
-        x_entries, binning, _ = axs2[clbs.index(i)-9].hist(x, bins=30, density=0, alpha=0.5 )
+        x_entries, binning, _ = axs2[clbs.index(i)-9].hist(x, bins=50, density=0, alpha=0.5 )
        
         binscentres = np.array([0.5 * (binning[i] + binning[i+1]) 
                                 for i in range(len(binning)-1)])
@@ -123,10 +133,12 @@ for i in clbs:
         axs2[clbs.index(i)-9].set_ylabel('Entries',fontsize=13)
         axs2[clbs.index(i)-9].set_title(f'CLB {i}',fontsize=14)
         fig2.tight_layout()
-
+        fig2.show()
         #get back to the 1e-10 array to put it in the df
         stat = [x[i]*1e-10 for i in range(len(x))] 
         statx = np.array(stat)
+        print(i,'bins=',len(binning))
+    
         
 #------------------------------- Statistics ----------------------------------#
 #Mean value
@@ -154,7 +166,7 @@ for i in clbs:
     df_collection.append(pd.DataFrame([stat_i], columns =column))
 
 
-
+plt.show()
 #concatenate the CLBs DF into one single table
 df_1 = pd.concat(df_collection[i] for i in range(len(clbs)))
 
@@ -170,7 +182,7 @@ mu, sigma = norm.fit(x)
 fit_bins = np.linspace(xmin,xmax,100)
 
 fit_func = norm.pdf(fit_bins, mu, sigma)
-
+    
 plt.plot(fit_bins, fit_func)
 
 print('mu =',mu, '1e-10 s')

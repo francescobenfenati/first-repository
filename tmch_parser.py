@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-f = open("prova_parser.txt","r")
+f = open("/Users/francescobenfenati/prova_parser.txt","r")
 
 doms_a0 =["Data 3.4.3.2/V2-2-1/2.537-ahrs_a[0]\n",
           "Data 3.4.3.2/V2-2-1/2.157-ahrs_a[0]\n",
@@ -57,62 +57,109 @@ doms_a2 =["Data 3.4.3.2/V2-2-1/2.537-ahrs_a[2]\n",
           "Data 3.4.3.2/V2-2-1/2.586-ahrs_a[2]\n",
           "Data 3.4.3.2/V2-2-1/2.83-ahrs_a[2]\n"]
 
-
 doms=[1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18]
 
-dom_list = []
-dom_i = []
-b = ""
-
-while True:
+dom_list = [] #list which contains all dom_i lists for all DOMs NOT USUED
+dom_i = [] #list which contains dom_id,time,a0,a1,a2 lists for each dom NOT USUED
+dom_id = [] #repetitive list of DOM number
+a0 = [] #list of a0 values for each dom
+a1 = []
+a2 = []
+time_list = [] #list of times (given a DOM they are the same for a0,a1,a2)
+while True:  #read file line by line
     riga = f.readline()
-    dom_id = []
-    a0 = []
-    a1 = []
-    a2 = []
+    
     if riga in doms_a0:
-#        print("segue compass0 del DOM",doms[doms_a0.index(riga)])
         x = ""
-        while x != doms_a1[doms_a0.index(riga)]:
-            x = f.readline()
-            if x == doms_a1[doms_a0.index(riga)]:
-                riga = x
+        line = ""
+        while True:
+            letter = ""
+            time = ""
+            a = 0 
+            while letter != "M": #leggi lettera per lettera fino alla M
+                letter = f.read(1)
+                if letter == "D": #se è una D -> comincia la categoria successiva, raise flag a = 1
+                    line = letter+f.readline()
+                    a = 1
+                    break
+                time += letter
+
+            if a == 0: #entra solo se se la prima lettera NON è una 'D'
+                x  = f.readline() #completa lettura riga da dopo la 'M' -> valore del compass
+                line = time+x
+                
+            if line == doms_a1[doms_a0.index(riga)]:
+                riga = line
                 break
-            y = x.replace(" System.Double\n","")
-#            print(y)
-            a0.append(y)
+         
+            compass_value = x.replace(" System.Double\n","")
+            a0.append(compass_value)
+            time_list.append(time)
             dom_id.append(doms[doms_a0.index(riga)])
-        dom_i.append(dom_id)    
-        dom_i.append(a0)
+      #  dom_i.append(dom_id)
+      #  dom_i.append(time_list)
+      #  dom_i.append(a0)
 
     if riga in doms_a1:
-#        print("segue compass1 del DOM",doms[doms_a1.index(riga)])
         x = ""
-        while x != doms_a2[doms_a1.index(riga)]:
-            x = f.readline()
-            if x == doms_a2[doms_a1.index(riga)]:
-                riga = x
+        line = ""
+        while True:
+            letter = ""
+            time = ""
+            a = 0
+            while letter != "M":
+                letter = f.read(1)
+                if letter == "D":
+                    line = letter+f.readline()
+                    a = 1
+                    break
+                time += letter
+
+            if a == 0:
+                x  = f.readline()
+                line = time+x
+                
+            if line == doms_a2[doms_a1.index(riga)]:
+                riga = line
                 break
-#            y = x.replace(" System.Double\n","")
-            print(y)
-            a1.append(y)
-        dom_i.append(a1)
+            
+            compass_value = x.replace(" System.Double\n","")
+            a1.append(compass_value)
+       # dom_i.append(a1)
                     
     if riga in doms_a2:
-#        print("segue compass2 del DOM",doms[doms_a2.index(riga)])
         x = ""
-        for i in range(61):
-            x = f.readline()
-            y = x.replace(" System.Double\n","")
-#            print(y)
-            a2.append(y)
-        dom_i.append(a2)  
-        dom_list.append(dom_i)
-        list_of_tuples = list(zip(dom_id,a0,a1,a2))
+        line = ""
+        while True:
+            letter = ""
+            time = ""
+            a = 0
+            while letter != 'M':
+                letter = f.read(1)
+                if letter == 'D':
+                    line = letter+f.readline()
+                    a = 1
+                    break
+                time += letter
+            if a == 0:
+                x = f.readline()
+                line = time+x
+            elif a == 1: #in questo caso se la prima lettera è 'D' devo tornare a leggere righe fino ad a[0] del seguente DOM
+                break
+            compass_value = x.replace(" System.Double\n","")
+            a2.append(compass_value)
+            
+
+#        dom_i.append(a2)  
+#        dom_list.append(dom_i) #not used
+
     if riga == "":
         break
 
-#print(dom_list)
+list_of_tuples = list(zip(dom_id,time_list,a0,a1,a2))            
 
-df = pd.DataFrame(list_of_tuples,columns=['DOM','a[0]','a[1]','a[2]'])
+df = pd.DataFrame(list_of_tuples,columns=['DOM','time','a[0]','a[1]','a[2]'])
 print(df)
+df.to_csv("datalog_parsed.csv",index=0)
+
+f.close()

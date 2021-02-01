@@ -8,99 +8,85 @@ Created on Wed Dec  2 12:42:02 2020
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy.optimize import curve_fit
+
+def fit_function(x,B,a,b):
+    return (B * np.exp(-((x-a)**2)/(2*b**2)))
+
+#Reduced CHI square: takes observed val.,expected val.,constraints array-like
+#chi square on a non-normalized hist. different after normalization??
+def chi_square(obs,exp,constr):
+    diff = [(obs[i] - exp[i])**2/exp[i] for i in range(1,len(obs))]
+    dof = (len(obs)-len(constr))
+    return sum(diff)/dof
 
 
-fig_1, axs_1 = plt.subplots(2,2)  #divide the canvas in subplots
-fig_2, axs_2 = plt.subplots(2,2)
+fig, axs = plt.subplots(1,1)
 
-CLBs = [2,3,4,5,7,8,9,10]
+CLB = '6-3'
 
-df_1_collection = [] #create array of DataFrames, one DF (1 row) per each CLB
+fig.suptitle('CLB Delays')
 
-column = ['CLB','Mean','Max','Min','Var','Sigma','Measures']
-
-axs_1 = axs_1.ravel() #need to do this to make it a np.array? not a ndarray..!
-axs_2 = axs_2.ravel() #need to do this to make it a np.array? not a ndarray..!
-
-colors = ['blue','red','green','navy']
-
-fig_1.suptitle('CLB Delays')
-fig_2.suptitle('CLB Delays')
-
-for i in range(2,11):
+#Read data as DataFrame with column named "values"
+data = pd.read_csv(f"/Users/francescobenfenati/Phase2_Oscilloscope/Measurement_Clb{CLB}.Wfm.csv",names=['values'])
     
-    arr = [] 
-    
-    
-    if i == 6:
-        continue
+column = ['CLB','Mean','Max','Min','Var','Sigma','Measures','Fit mean','Fit sigma','Reduced chi^2']
+x= np.array(data['values']*1e10)  
 
-    with open(f"/Users/francescobenfenati/BCI_Oscilloscope_old/MeasurementCLB{i}.Wfm.csv") as f:
-        for line in f:
-            arr.append(float(line))
-            
-    x = np.array(arr)
-   
+
+x_entries, binning, _ = axs.hist(x, bins=1000, density=0, alpha=0.5 )
+
+#find bin centres
+binscentres = np.array([0.5 * (binning[i] + binning[i+1]) 
+                                for i in range(len(binning)-1)])
+#curve fit
+popt, _ = curve_fit(fit_function, binscentres, x_entries)
+
+# summarize the parameter values
+B, a, b = popt
+
+# Generate enough x values to make the curves look smooth.
+fit2_bins = np.linspace(np.amin(x), np.amax(x), 1000)
+
+#expected events from fit curve
+expected_events = fit_function(binscentres, *popt)
+
+#Plot the fitted function.
+#axs.plot(fit2_bins,fit_function(fit2_bins, *popt), color='red', linewidth=2.5,
+#                                              label=r'Fitted function')
+
+chi = chi_square(x_entries,expected_events,popt)
+#print('reduced chi value =',chi,'\n')
+#print(chisquare(f_obs=x_entries, f_exp=expected_events,ddof=len(x_entries)-2))
+
+#Make the plot nicer.
+axs.set_xlabel('time [$10^{-10}$ s]',fontsize=13)
+axs.set_ylabel('Entries',fontsize=13)
+axs.set_title(f'CLB {CLB}',fontsize=14)
+
+#round with 2 decimals and get back to the 1e-10 array to put it in the df
+stat = [x[i]*1e-10 for i in range(len(x))] 
+statx = np.array(stat)
+
 #------------------------------- Statistics ----------------------------------#
+#Mean value
+mean = np.mean(statx)
     
-    #Mean value
-    mean = np.mean(x)
+#MAX value
+xmax = np.amax(statx)
 
-    #MAX value
-    xmax = np.amax(x)
+#MIN value
+xmin = np.amin(statx)
 
-    #MIN value
-    xmin = np.amin(x)
+#Variance
+var = np.var(statx)
 
-    #Variance
-    var = np.var(x)
+#Standard deviation
+sigma = np.std(statx)
 
-    #Standard deviation
-    sigma = np.std(x)
-      
-    #Mean error
-    #mean_error = sigma/np.sqrt(len(x)))
-    
-    #create array of statistics for the current iesima-CLB
-    stat_i = [i,mean,xmax,xmin,var,sigma,len(x)]
+#Mean error
+#mean_error = sigma/np.sqrt(len(x)))
 
-    if i in range(2,6):
-        
-        #add DataFrame of the current CLB to the DF array
-        df_1_collection.append(pd.DataFrame([stat_i], columns =column))
-       
-        #empty the statistics array for next iteration 
-        stat_i.clear()
-    
-        #create histogram
-        x_entries, bins, _ = axs_1[i-2].hist(x, bins = np.linspace(np.amin(x),
-                    np.amax(x),50),density=0, alpha=0.5, color=colors[i-2] )
-
-        axs_1[i-2].set_xlabel('seconds')
-        axs_1[i-2].set_ylabel('entries')
-        axs_1[i-2].set_title(f'CLB {i}')
-
-    if i in range(7,11):
-             
-       df_1_collection.append(pd.DataFrame([stat_i],columns=column))
-       
-       stat_i.clear()
-
-       x_entries, bins, _ = axs_2[i-7].hist(x, bins = np.linspace(np.amin(x),
-                    np.amax(x),50),density=0, alpha=0.5, color=colors[i-7] )
-
-       axs_2[i-7].set_xlabel('seconds')
-       axs_2[i-7].set_ylabel('entries')
-       axs_2[i-7].set_title(f'CLB {i}')
-    
-#----------------------------- Create Histogram ------------------------------#
+df = pd.DataFrame([[f'{CLB}',mean,xmax,xmin,var,sigma,len(x),a*1e-10,b*1e-10,chi]],columns=column)
 
 
-fig_1.tight_layout() #makes canvas look tight
-fig_2.tight_layout() #makes canvas look tight
-
-#concatenate the CLBs DF into one single table
-df_1 = pd.concat([df_1_collection[i] for i in range(len(df_1_collection))])
-
-#save DF to csv file
-df_1.to_csv('/Users/francescobenfenati/CLBdelays.csv',index=0)
